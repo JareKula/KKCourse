@@ -1,0 +1,27 @@
+{
+    "name": "jarek/course-bundle-recommendation",
+    "description": "jarek/course-bundle-recommendation",
+    "type": "shopware-platform-plugin",
+    "version": "1.0.0",
+    "license": "MIT",
+    "require": {
+        "shopware/core": "~6.6.0"
+    },
+    "extra": {
+        "shopware-plugin-class": "Jarek\\CourseBundleRecommendation",
+        "label": {
+            "de-DE": "Course Bundle Recommendation plugin",
+            "en-GB": "Course Bundle Recommendation plugin"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Jarek\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Jarek\\Tests\\": "tests/"
+        }
+    }
+}
