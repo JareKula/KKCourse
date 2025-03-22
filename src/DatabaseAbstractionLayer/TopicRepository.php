@@ -23,7 +23,7 @@ readonly class TopicRepository
             throw new RuntimeException($exception->getMessage());
         }
 
-        $jsonData = json_decode($fileContent, true);
+        $jsonData = json_decode($fileContent, true, 512);
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new RuntimeException('Invalid JSON data.');
         }

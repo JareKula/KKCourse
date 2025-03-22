@@ -2,30 +2,35 @@
 
 namespace Jarek\Storefront\Controller;
 
-use Jarek\DatabaseAbstractionLayer\ProviderRepository;
-use Jarek\DatabaseAbstractionLayer\TopicRepository;
+use Jarek\Service\RecommendationService;
+use RuntimeException;
+use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\StorefrontController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route(defaults: ['_routeScope' => ['storefront']])]
 class BundleRecommendationController extends StorefrontController
 {
-    public function __construct(private readonly TopicRepository $topicRepository, private readonly ProviderRepository $providerRepository)
-    {
+
+    public function __construct(private readonly RecommendationService $recommendationService) {
+
     }
 
     #[Route(
         path: '/course/bundle-recommendation',
         name: 'frontend.course.bundle-recommendation',
+        defaults: ['XmlHttpRequest' => true],
         methods: ['GET', 'POST']
     )]
-    public function bundleRecommendation(Request $request, SalesChannelContext $context): JsonResponse
+    public function bundleRecommendation(RequestDataBag $dataBag, SalesChannelContext $context): JsonResponse
     {
-        $topicCollection = $this->topicRepository->getDataFromJsonFile('CourseBundleRecommendation/providers.json');
-        $providerCollection = $this->providerRepository->getDataFromJsonFile('CourseBundleRecommendation/providers.json');
-        return new JsonResponse([$topicCollection, $providerCollection]);
+        if (!$dataBag->has('topics')) {
+            throw new RuntimeException('Malformed input');
+        }
+        $quotes = $this->recommendationService->getQuotes($dataBag->get('topics'));
+        return new JsonResponse($quotes);
     }
+
 }
