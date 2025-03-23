@@ -6,7 +6,6 @@ use Jarek\DatabaseAbstractionLayer\Entity\ProviderCollection;
 use Jarek\DatabaseAbstractionLayer\Entity\ProviderEntity;
 use Jarek\DatabaseAbstractionLayer\Entity\TopicCollection;
 use Jarek\DatabaseAbstractionLayer\ProviderRepository;
-use Jarek\DatabaseAbstractionLayer\TopicRepository;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 
 class RecommendationService
@@ -17,14 +16,13 @@ class RecommendationService
 
     private static array $singleTopicWeights = [0 => 0.2, 1 => 0.25, 2 => 0.3];
 
-    public function __construct(private readonly TopicRepository $topicRepository, private readonly ProviderRepository $providerRepository)
+    public function __construct(private readonly ProviderRepository $providerRepository)
     {
     }
 
     public function getQuotes(RequestDataBag $dataBag): ?array
     {
         $this->topics = $this->getTopTopics($dataBag);
-        $this->topicCollection = $this->topicRepository->getDataFromJsonFile('CourseBundleRecommendation/providers.json');
         $this->providerCollection = $this->providerRepository->getDataFromJsonFile('CourseBundleRecommendation/providers.json');
         return $this->calculateQuotes();
     }
@@ -56,9 +54,9 @@ class RecommendationService
                 $importance++;
             }
             if ($matchedTopics == 2 && $matchedTopicsWeight > 0) {
-                $quotes[] = [$provider->getName() => $matchedTopicsWeight];
+                $quotes[$provider->getName()] = $matchedTopicsWeight;
             } elseif ($matchedTopics == 1 && $singleTopicWeight > 0) {
-                $quotes[] = [$provider->getName() => $singleTopicWeight];
+                $quotes[$provider->getName()] = $singleTopicWeight;
             }
         }
         return $quotes;

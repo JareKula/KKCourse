@@ -27,10 +27,10 @@ class BundleRecommendationController extends StorefrontController
     public function bundleRecommendation(RequestDataBag $dataBag, SalesChannelContext $context): JsonResponse
     {
         if (!$dataBag->has('topics')) {
-            throw new RuntimeException('Malformed input');
+            throw new RuntimeException('Malformed input.');
         }
         $quotes = $this->recommendationService->getQuotes($dataBag->get('topics'));
-        return new JsonResponse($quotes);
+        return new JsonResponse(['quotes' => $quotes]);
     }
 
 }
