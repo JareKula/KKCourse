@@ -2,6 +2,7 @@
 
 namespace Jarek\DatabaseAbstractionLayer;
 
+use InvalidArgumentException;
 use Jarek\DatabaseAbstractionLayer\Entity\ProviderCollection;
 use Jarek\DatabaseAbstractionLayer\Entity\ProviderEntity;
 use Jarek\DatabaseAbstractionLayer\Entity\TopicEntity;
@@ -27,22 +28,22 @@ readonly class ProviderRepository
 
         $jsonData = json_decode($fileContent, true, 512);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new RuntimeException('Invalid JSON data.');
+            throw new InvalidArgumentException('Invalid providers JSON data.');
         }
 
         if (empty($jsonData['provider_topics'])) {
-            throw new RuntimeException('Invalid JSON data structure.');
+            throw new InvalidArgumentException('Invalid providers JSON data structure.');
         }
 
         foreach ($jsonData['provider_topics'] as $providerName => $providerTopics) {
             if (empty($providerName)) {
-                throw new RuntimeException('Invalid JSON data structure - incorrect provider name.');
+                throw new InvalidArgumentException('Invalid JSON data structure - incorrect provider name.');
             }
             $topicCollection = new TopicCollection();
             $topicNames = explode("+", $providerTopics);
             foreach ($topicNames as $topicName) {
                 if (empty($topicName)) {
-                    throw new RuntimeException('Invalid JSON data structure - incorrect topic names.');
+                    throw new InvalidArgumentException('Invalid JSON data structure - incorrect topic names.');
                 }
                 $topicEntity = new TopicEntity();
                 $topicEntity->setName($topicName);

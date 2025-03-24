@@ -4,15 +4,13 @@ namespace Jarek\Service;
 
 use Jarek\DatabaseAbstractionLayer\Entity\ProviderCollection;
 use Jarek\DatabaseAbstractionLayer\Entity\ProviderEntity;
-use Jarek\DatabaseAbstractionLayer\Entity\TopicCollection;
 use Jarek\DatabaseAbstractionLayer\ProviderRepository;
-use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
+use Symfony\Component\HttpFoundation\InputBag;
 
 class RecommendationService
 {
     private array $topics;
     private ProviderCollection $providerCollection;
-    private TopicCollection $topicCollection;
 
     private static array $singleTopicWeights = [0 => 0.2, 1 => 0.25, 2 => 0.3];
 
@@ -20,16 +18,16 @@ class RecommendationService
     {
     }
 
-    public function getQuotes(RequestDataBag $dataBag): ?array
+    public function getQuotes(InputBag $dataBag): ?array
     {
-        $this->topics = $this->getTopTopics($dataBag);
+        $topics = $dataBag->all();
+        $this->topics = $this->getTopTopics($topics['topics']);
         $this->providerCollection = $this->providerRepository->getDataFromJsonFile('CourseBundleRecommendation/providers.json');
         return $this->calculateQuotes();
     }
 
-    private function getTopTopics(RequestDataBag $dataBag): array
+    private function getTopTopics(array $topics): array
     {
-        $topics = $dataBag->all();
         arsort($topics);
         return array_slice($topics, 0, 3);
     }
