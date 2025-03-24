@@ -25,7 +25,7 @@ readonly class ExceptionSubscriber implements EventSubscriberInterface
         $exception = $event->getThrowable();
 
         // Log the exception
-        $this->logger->error('Caught exception: ' . $exception->getMessage(), ['exception' => $exception, 'trace' => $exception->getTraceAsString(),]);
+        $this->logger->error('Recommendation service exception: ' . $exception->getMessage());
 
         $response = new JsonResponse($exception->getMessage(), Response::HTTP_BAD_REQUEST);
 
