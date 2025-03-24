@@ -11,17 +11,19 @@ use RuntimeException;
 use League\Flysystem\Filesystem;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-readonly class ProviderRepository
+readonly class ProviderRepositoryJSONFile implements ProviderRepositoryInterface
 {
+
+    const FILENAME = 'CourseBundleRecommendation/providers.json';
     public function __construct(#[Autowire(service: 'shopware.filesystem.private')] private Filesystem $filesystem)
     {
     }
 
-    public function getDataFromJsonFile(string $fileName): ProviderCollection
+    public function getProviderData(): ProviderCollection
     {
         $providerCollection = new ProviderCollection();
         try {
-            $fileContent = $this->filesystem->read($fileName);
+            $fileContent = $this->filesystem->read(self::FILENAME);
         } catch (\Throwable $exception) {
             throw new RuntimeException($exception->getMessage());
         }

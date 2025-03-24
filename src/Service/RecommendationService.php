@@ -4,7 +4,7 @@ namespace Jarek\Service;
 
 use Jarek\DatabaseAbstractionLayer\Entity\ProviderCollection;
 use Jarek\DatabaseAbstractionLayer\Entity\ProviderEntity;
-use Jarek\DatabaseAbstractionLayer\ProviderRepository;
+use Jarek\DatabaseAbstractionLayer\ProviderRepositoryInterface;
 use Symfony\Component\HttpFoundation\InputBag;
 
 class RecommendationService
@@ -12,9 +12,11 @@ class RecommendationService
     private array $topics;
     private ProviderCollection $providerCollection;
 
-    private static array $singleTopicWeights = [0 => 0.2, 1 => 0.25, 2 => 0.3];
+    private static array $singleTopicWeights = [1 => 0.2, 2 => 0.25, 3 => 0.3];
+    private static float $twoTopicsWeight = 0.1;
+    private static int $topicsToConsider = 3;
 
-    public function __construct(private readonly ProviderRepository $providerRepository)
+    public function __construct(private readonly ProviderRepositoryInterface $providerRepository)
     {
     }
 
@@ -22,14 +24,14 @@ class RecommendationService
     {
         $topics = $dataBag->all();
         $this->topics = $this->getTopTopics($topics['topics']);
-        $this->providerCollection = $this->providerRepository->getDataFromJsonFile('CourseBundleRecommendation/providers.json');
+        $this->providerCollection = $this->providerRepository->getProviderData();
         return $this->calculateQuotes();
     }
 
     private function getTopTopics(array $topics): array
     {
         arsort($topics);
-        return array_slice($topics, 0, 3);
+        return array_slice($topics, 0, self::$topicsToConsider);
     }
 
     private function calculateQuotes(): array {
@@ -42,14 +44,14 @@ class RecommendationService
             $importance = 0;
             $singleTopicWeight = 0;
             foreach ($this->topics as $topic => $weight) {
+                $importance++;
                 if ($provider->getTopicCollection()->has($topic) && $matchedTopics < 2) {
-                    $matchedTopicsWeight += 0.1 * $weight;
+                    $matchedTopicsWeight += self::$twoTopicsWeight * $weight;
                     if ($matchedTopics < 1) {
                         $singleTopicWeight = self::$singleTopicWeights[$importance] * $weight;
                     }
                     $matchedTopics++;
                 }
-                $importance++;
             }
             if ($matchedTopics == 2 && $matchedTopicsWeight > 0) {
                 $quotes[$provider->getName()] = $matchedTopicsWeight;
