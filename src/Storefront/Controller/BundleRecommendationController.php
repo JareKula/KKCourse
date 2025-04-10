@@ -3,6 +3,7 @@
 namespace Jarek\Storefront\Controller;
 
 use InvalidArgumentException;
+use Jarek\Dto\RequestedTopic;
 use Jarek\Service\RecommendationService;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -10,12 +11,13 @@ use Shopware\Storefront\Controller\StorefrontController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route(defaults: ['_routeScope' => ['storefront']])]
 class BundleRecommendationController extends StorefrontController
 {
 
-    public function __construct(private readonly RecommendationService $recommendationService, private readonly LoggerInterface $logger)
+    public function __construct(private readonly RecommendationService $recommendationService, private readonly LoggerInterface $logger, private readonly ValidatorInterface $validator)
     {
 
     }
@@ -29,7 +31,15 @@ class BundleRecommendationController extends StorefrontController
             $this->logger->error("Recommendation request: Malformed input.");
             throw new InvalidArgumentException('Malformed input.');
         }
-        $quotes = $this->recommendationService->getQuotes($dataBag);
+        $requestedTopics = $dataBag->all()['topics'];
+        foreach ($requestedTopics as $name => $weight) {
+            $requestedTopic = new RequestedTopic($name, $weight);
+            $validationErrors = $this->validator->validate($requestedTopic);
+            if (count($validationErrors) > 0) {
+                throw new InvalidArgumentException((string) $validationErrors);
+            }
+        }
+        $quotes = $this->recommendationService->getQuotes($requestedTopics);
         $this->logger->debug("Recommendation response: " . json_encode(['quotes' => $quotes]));
         return new JsonResponse(['quotes' => $quotes]);
     }

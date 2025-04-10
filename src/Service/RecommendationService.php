@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Jarek\Service;
 
@@ -20,10 +20,9 @@ class RecommendationService
     {
     }
 
-    public function getQuotes(InputBag $dataBag): ?array
+    public function getQuotes(Array $topics): ?array
     {
-        $topics = $dataBag->all();
-        $this->topics = $this->getTopTopics($topics['topics']);
+        $this->topics = $this->getTopTopics($topics);
         $this->providerCollection = $this->providerRepository->getProviderData();
         return $this->calculateQuotes();
     }
